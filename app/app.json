@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "CGPA Calculator",
+    "slug": "emmanuel",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "owner": "valiantjoe",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1976FF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.cgpacalculator"
+    },
+    "android": {
+      "package": "app.cgpacalculator",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1976FF"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a9487c12-7f1c-4bf8-bcd6-f71ab2f07cbb"
+      }
+    }
+  }
+}

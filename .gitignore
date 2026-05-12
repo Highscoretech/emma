@@ -1,0 +1,48 @@
+# Dependencies
+**/node_modules/
+
+# Expo
+**/.expo/
+**/.expo-shared/
+**/dist/
+**/web-build/
+**/expo-env.d.ts
+
+# Native build folders (generated)
+**/ios/
+**/android/
+
+# Metro
+.metro-health-check*
+
+# Native credentials & keys
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+*.orig.*
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Environment files (anything with real secrets)
+.env
+.env.*
+!.env.example
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# EAS local files
+.easignore

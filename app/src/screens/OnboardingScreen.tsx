@@ -34,12 +34,6 @@ const slides: Slide[] = [
     body: 'Log your courses, units, and scores semester by semester — no spreadsheets needed.',
   },
   {
-    key: 'calculate',
-    emoji: '🧮',
-    title: 'Instant CGPA',
-    body: 'Your GPA per semester and cumulative CGPA recalculate automatically as you enter grades.',
-  },
-  {
     key: 'aim',
     emoji: '🎯',
     title: 'Aim for First Class',

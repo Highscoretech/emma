@@ -10,6 +10,7 @@ import {
 import { colors, radius, spacing, typography } from '../theme/theme';
 import type { CourseEntry, CourseType } from '../models';
 import { scoreToGrade, scoreToPoint } from '../models/grading';
+import { MAX_UNITS, MIN_UNITS } from '../utils/validation';
 
 interface Props {
   index: number;
@@ -36,7 +37,11 @@ export function CourseRow({ index, course, onChange, onDelete }: Props) {
   const gradePoint = hasScore ? scoreToPoint(course.score) : 0;
 
   const unitsInvalid =
-    unitsText.length > 0 && (Number(unitsText) <= 0 || isNaN(Number(unitsText)));
+    unitsText.length > 0 &&
+    (isNaN(Number(unitsText)) ||
+      !Number.isInteger(Number(unitsText)) ||
+      Number(unitsText) < MIN_UNITS ||
+      Number(unitsText) > MAX_UNITS);
   const scoreInvalid =
     scoreText.length > 0 &&
     (Number(scoreText) < 0 || Number(scoreText) > 100 || isNaN(Number(scoreText)));
@@ -81,18 +86,22 @@ export function CourseRow({ index, course, onChange, onDelete }: Props) {
           <Text style={styles.label}>Units</Text>
           <TextInput
             style={[styles.input, unitsInvalid && styles.inputError]}
-            placeholder="2"
+            placeholder="e.g. 2"
             placeholderTextColor={colors.textMuted}
             value={unitsText}
             keyboardType="number-pad"
             onChangeText={(v) => {
               setUnitsText(v);
               const n = Number(v);
-              if (v === '') onChange({ creditUnits: 0 });
-              else if (!isNaN(n) && n > 0) onChange({ creditUnits: n });
+              if (v === '' || isNaN(n)) onChange({ creditUnits: 0 });
+              else onChange({ creditUnits: n });
             }}
           />
-          {unitsInvalid && <Text style={styles.errorText}>Must be {'>'} 0</Text>}
+          {unitsInvalid && (
+            <Text style={styles.errorText}>
+              {MIN_UNITS}–{MAX_UNITS} only
+            </Text>
+          )}
         </View>
         <View style={{ flex: 1.4 }}>
           <Text style={styles.label}>Type</Text>
@@ -151,7 +160,7 @@ export function CourseRow({ index, course, onChange, onDelete }: Props) {
         </View>
         <View style={styles.derivedDivider} />
         <View style={styles.derivedCell}>
-          <Text style={styles.derivedLabel}>Quality Pts</Text>
+          <Text style={styles.derivedLabel}>Total Grade Point</Text>
           <Text style={[styles.derivedValue, !hasScore && styles.derivedMuted]}>
             {hasScore ? gradePoint * course.creditUnits : '—'}
           </Text>

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -41,6 +41,11 @@ export function SplashScreen() {
     <LinearGradient colors={gradient.primary} style={styles.container}>
       <View style={styles.center}>
         <Text style={styles.title}>CGPA Calculator</Text>
+        <Image
+          source={require('../../assets/icon.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.subtitle}>Track your academic performance</Text>
       </View>
     </LinearGradient>
@@ -51,5 +56,11 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   title: { ...typography.h1, color: colors.white },
-  subtitle: { ...typography.body, color: colors.whiteAlpha80, marginTop: 8 },
+  logo: {
+    width: 120,
+    height: 120,
+    marginTop: 20,
+    borderRadius: 28,
+  },
+  subtitle: { ...typography.body, color: colors.whiteAlpha80, marginTop: 20 },
 });

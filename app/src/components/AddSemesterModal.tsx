@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme/theme';
 import type { Term } from '../models';
+import { VALID_LEVELS } from '../utils/validation';
+import { validateSession } from '../utils/validation';
 
 interface Props {
   visible: boolean;
@@ -24,17 +26,25 @@ export function AddSemesterModal({ visible, onClose, onSubmit }: Props) {
   const [level, setLevel] = useState('');
   const [session, setSession] = useState('');
   const [term, setTerm] = useState<Term>('FIRST SEMESTER');
+  const [sessionError, setSessionError] = useState<string | null>(null);
 
-  const canSubmit = level.trim().length > 0 && session.trim().length > 0;
+  const sessionValidationError = validateSession(session);
+  const canSubmit = level.trim().length > 0 && sessionValidationError === null;
 
   const reset = () => {
     setLevel('');
     setSession('');
     setTerm('FIRST SEMESTER');
+    setSessionError(null);
   };
 
   const handleSubmit = () => {
-    if (!canSubmit) return;
+    if (level.trim().length === 0) return;
+    const err = validateSession(session);
+    if (err) {
+      setSessionError(err);
+      return;
+    }
     onSubmit({ level: level.trim(), session: session.trim(), term });
     reset();
   };
@@ -61,23 +71,38 @@ export function AddSemesterModal({ visible, onClose, onSubmit }: Props) {
           <Text style={styles.title}>Add Semester</Text>
 
           <Text style={styles.label}>Level</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 400 LEVEL"
-            placeholderTextColor={colors.textMuted}
-            value={level}
-            onChangeText={setLevel}
-            autoCapitalize="characters"
-          />
+          <View style={styles.levelRow}>
+            {VALID_LEVELS.map((lvl) => {
+              const active = level === lvl;
+              return (
+                <Pressable
+                  key={lvl}
+                  onPress={() => setLevel(lvl)}
+                  style={[styles.levelChip, active && styles.levelChipActive]}
+                >
+                  <Text
+                    style={[styles.levelText, active && styles.levelTextActive]}
+                  >
+                    {lvl}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
           <Text style={styles.label}>Session</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, sessionError && styles.inputError]}
             placeholder="e.g. 2025/2026"
             placeholderTextColor={colors.textMuted}
             value={session}
-            onChangeText={setSession}
+            keyboardType="numbers-and-punctuation"
+            onChangeText={(v) => {
+              setSession(v);
+              if (sessionError) setSessionError(null);
+            }}
           />
+          {sessionError && <Text style={styles.errorText}>{sessionError}</Text>}
 
           <Text style={styles.label}>Term</Text>
           <View style={styles.termRow}>
@@ -161,6 +186,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
   },
+  inputError: { borderColor: colors.danger },
+  errorText: { ...typography.caption, color: colors.danger, marginTop: 4 },
+  levelRow: { flexDirection: 'row', gap: spacing.sm, marginTop: 2 },
+  levelChip: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  levelChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  levelText: { ...typography.body, color: colors.text },
+  levelTextActive: { color: colors.white, fontWeight: '600' },
   termRow: { flexDirection: 'row', gap: spacing.sm, marginTop: 2 },
   termChip: {
     flex: 1,

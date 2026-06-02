@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -19,7 +19,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, radius, spacing, typography } from '../theme/theme';
 import { useSemesterStore } from '../store/semesterStore';
 import { CourseRow } from '../components/CourseRow';
+import { CoursePickerModal } from '../components/CoursePickerModal';
 import { calcSemester } from '../utils/cgpa';
+import { getCatalogCourses } from '../data/courseCatalog';
+import { MAX_UNITS, MIN_UNITS } from '../utils/validation';
 import type { RootStackParamList } from '../navigation/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'GradeEntry'>;
@@ -37,6 +40,7 @@ export function GradeEntryScreen() {
   const updateCourse = useSemesterStore((s) => s.updateCourse);
   const deleteCourse = useSemesterStore((s) => s.deleteCourse);
   const deleteSemester = useSemesterStore((s) => s.deleteSemester);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -60,17 +64,22 @@ export function GradeEntryScreen() {
     (c) =>
       !c.code.trim() ||
       !c.title.trim() ||
-      c.creditUnits <= 0 ||
+      c.creditUnits < MIN_UNITS ||
+      c.creditUnits > MAX_UNITS ||
+      !Number.isInteger(c.creditUnits) ||
       c.score < 0 ||
       c.score > 100,
   );
   const canCalculate = semester.courses.length > 0 && !hasIncompleteRows;
 
+  const catalogCourses = getCatalogCourses(semester.level, semester.term);
+  const hasCatalog = catalogCourses.length > 0;
+
   const handleAddCourse = () => {
     addCourse(semester.id, {
       code: '',
       title: '',
-      creditUnits: 2,
+      creditUnits: 0,
       type: 'CORE/COMPULSORY COURSE',
       score: 0,
     });
@@ -149,7 +158,9 @@ export function GradeEntryScreen() {
             <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>No courses yet</Text>
               <Text style={styles.emptyBody}>
-                Tap "Add Course" to start entering grades.
+                {hasCatalog
+                  ? `Tap "Select ${semester.level} Level courses" to pick from your course list, or add one manually.`
+                  : 'Tap "Add Course" to start entering grades.'}
               </Text>
             </View>
           )}
@@ -164,8 +175,19 @@ export function GradeEntryScreen() {
             />
           ))}
 
+          {hasCatalog && (
+            <Pressable
+              style={styles.pickBtn}
+              onPress={() => setPickerOpen(true)}
+            >
+              <Text style={styles.pickBtnText}>
+                + Select {semester.level} Level courses
+              </Text>
+            </Pressable>
+          )}
+
           <Pressable style={styles.addBtn} onPress={handleAddCourse}>
-            <Text style={styles.addBtnText}>+ Add Course</Text>
+            <Text style={styles.addBtnText}>+ Add course manually</Text>
           </Pressable>
         </ScrollView>
 
@@ -184,6 +206,26 @@ export function GradeEntryScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      <CoursePickerModal
+        visible={pickerOpen}
+        level={semester.level}
+        term={semester.term}
+        existingCodes={semester.courses.map((c) => c.code)}
+        onClose={() => setPickerOpen(false)}
+        onConfirm={async (courses) => {
+          for (const c of courses) {
+            await addCourse(semester.id, {
+              code: c.code,
+              title: c.title,
+              creditUnits: c.creditUnits,
+              type: 'CORE/COMPULSORY COURSE',
+              score: 0,
+            });
+          }
+          setPickerOpen(false);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -232,6 +274,15 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.xs,
   },
+  pickBtn: {
+    paddingVertical: 14,
+    borderRadius: radius.md,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  pickBtnText: { ...typography.button, color: colors.white },
   addBtn: {
     paddingVertical: 14,
     borderRadius: radius.md,
